@@ -1,5 +1,5 @@
-import { Users, Bot, Swords } from 'lucide-react';
-import Link from 'next/link';
+import { Users, Bot, Swords } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <div className="text-center mb-12">
         <h1 className="text-[5rem] md:text-[10rem] font-bold tracking-widest uppercase font-toxia text-transparent bg-clip-text bg-linear-to-b from-stone-900 to-black [-webkit-text-stroke:2px_rgba(239,68,68,0.8)] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-all duration-500 hover:[-webkit-text-stroke:2px_#ffffff] hover:drop-shadow-[0_0_25px_rgba(16,185,129,0.8)] group cursor-pointer">
           Trust
-          <span className="text-red-600  font-bold [-webkit-text-stroke:2px_#000000] drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] animate-pulse">
+          <span className="text-red-600 font-bold [-webkit-text-stroke:2px_#000000] drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] animate-pulse">
             fall
           </span>
         </h1>
@@ -38,7 +38,6 @@ export default function Home() {
         </Link>
 
       </div>
-
 
     </div>
   );
