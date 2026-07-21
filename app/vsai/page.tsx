@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronRight,
   Trophy,
   ShieldAlert,
   Handshake,
@@ -13,19 +11,16 @@ import {
   RotateCcw,
   HomeIcon,
 } from "lucide-react";
-import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
 
-export default function GameRoom() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const roomId = params?.roomId as string;
-  const opponentId = searchParams?.get("opponent") || "Opponent";
+const maxRounds = Math.floor(Math.random() * (10 - 5 + 1)) + 5;
 
-  const [socketId, setSocketId] = useState("");
+
+export default function GameRoom() {
+
   const [myChoice, setMyChoice] = useState<Choice | null>(null);
   const [opponentChoice, setOpponentChoice] = useState<Choice | null>(null);
 
@@ -36,48 +31,8 @@ export default function GameRoom() {
   const [outcome, setOutcome] = useState<RoundResult>(null);
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
-  const [maxRounds, setMaxRounds] = useState(7);
   const roundRef = useRef(1);
   const [roundDisplay, setRoundDisplay] = useState(1);
-  const socketRef = useRef<Socket | null>(null);
-
-  useEffect(() => {
-    if (!roomId) return;
-    
-    const socket = io("http://localhost:5000");
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      setSocketId(socket.id || "");
-      socket.emit("joinRoom", { roomId });
-    });
-
-    socket.on("opponentLockedIn", () => {
-      setOpponentLocked(true);
-    });
-
-    socket.on("roomInitialized", (data: { maxRounds: number}) => {
-      setMaxRounds(data.maxRounds)
-    });
-
-    socket.on("revealChoices", (data: { choices: Record<string, Choice> }) => {
-      const myId = socket.id || "";
-      const keys = Object.keys(data.choices);
-      const targetId = keys.find((id) => id !== myId) || "";
-      
-      const mine = data.choices[myId];
-      const theirs = data.choices[targetId];
-      
-      if (mine && theirs) {
-        setOpponentChoice(theirs);
-        triggerRevealSequence(mine, theirs);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [roomId]);
 
   useEffect(() => {
     if(gameState === "ended") return;
@@ -111,10 +66,7 @@ export default function GameRoom() {
 
     setMyChoice(action);
     setMyLocked(true);
-    socketRef.current?.emit("play", {
-      roomId,
-      action,
-    });
+    
   };
 
   const triggerRevealSequence = (mine: Choice, theirs: Choice) => {

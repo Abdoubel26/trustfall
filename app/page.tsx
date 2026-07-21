@@ -23,7 +23,7 @@ export default function Home() {
           </div>
         </Link>
 
-        <Link href="/challenge-ai" className="group w-full justify-center cursor-pointer flex items-center p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20">
+        <Link href="/vsai" className="group w-full justify-center cursor-pointer flex items-center p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20">
           <div className="flex items-center gap-2">
             <Bot className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
             <span className="uppercase font-bold text-lg">Challenge AI </span>
