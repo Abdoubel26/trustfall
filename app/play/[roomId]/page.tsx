@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronRight,
   Trophy,
   ShieldAlert,
   Handshake,
@@ -15,6 +14,8 @@ import {
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import Link from "next/link";
+import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "../..//lib/audio";
+
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
@@ -126,16 +127,28 @@ export default function GameRoom() {
         setOutcome("dopamine");
         setMyScore((prev) => prev + 3);
         setOpponentScore((prev) => prev - 1)
+        if(roundRef.current < maxRounds){
+          playDopamine()
+        }
       } else if (mine === "cooperate" && theirs === "defect") {
         setOutcome("shame");
         setOpponentScore((prev) => prev + 3);
         setMyScore((prev) => prev - 1)
+        if(roundRef.current < maxRounds){
+          playShame()
+        }
       } else if (mine === "cooperate" && theirs === "cooperate") {
         setOutcome("hooray");
         setMyScore((prev) => prev + 2);
         setOpponentScore((prev) => prev + 2);
+        if(roundRef.current < maxRounds){
+          playHooray()
+        }
       } else {
         setOutcome("ruin");
+        if(roundRef.current < maxRounds){
+          playRuin()
+        }
       }
     }, 1000);
   };

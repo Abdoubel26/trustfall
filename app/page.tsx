@@ -1,7 +1,17 @@
+"use client"
 import { Users, Bot, Swords } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { playMainpageBGM } from "./lib/audio";
 
 export default function Home() {
+
+  useEffect(() => {
+      playMainpageBGM()
+    }, [])
+
+
+
   return (
     <div className="bg-[url('/bg.gif')] bg-cover bg-center min-h-screen flex flex-col justify-center p-6 select-none">
       

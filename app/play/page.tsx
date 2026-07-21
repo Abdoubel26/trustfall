@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ShieldAlert, Users } from "lucide-react";
 import { io, Socket } from "socket.io-client";
+import { playLoadingBGM } from "../lib/audio";
 
 export default function PlayPage() {
   const router = useRouter();
@@ -19,6 +20,10 @@ export default function PlayPage() {
   const log = (msg: string) => {
     setTerminalLogs((prev) => [...prev.slice(-4), `> ${msg}`]);
   };
+  
+  useEffect(() => {
+      playLoadingBGM()
+    }, [])
 
   // Dots animation helper
   useEffect(() => {

@@ -1,10 +1,16 @@
 "use client"
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ShieldAlert, Users } from "lucide-react";
+import { useEffect } from "react";
+import { playLoadingBGM } from "../lib/audio";
 
 
 export default function Loading() {
  
+
+  useEffect(() => {
+    playLoadingBGM()
+  }, [])
 
 
   return (
@@ -47,7 +53,7 @@ export default function Loading() {
         </div>
 
         <p className="mt-6 text-center text-xs text-stone-500 max-w-xs leading-relaxed">
-          One more player needed. Will they cooperate… or defect?
+          One more player needed.
         </p>
       </div>
   );

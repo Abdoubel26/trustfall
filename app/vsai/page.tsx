@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import runChat from "../lib/groq";
+import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "../lib/audio";
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
@@ -38,7 +39,15 @@ export default function GameRoom() {
   const [roundDisplay, setRoundDisplay] = useState(1);
 
   useEffect(() => {
-    if(gameState === "ended") return;
+
+      if (gameState === "deciding") {
+        playGameplayBGM();
+      } else if (gameState === "ended") {
+        stopBGM();
+        if (myScore > opponentScore) playWin();
+        else if (myScore < opponentScore) playLost();
+        else playRuin();
+      }
 
     let TimeOut: ReturnType<typeof setTimeout> | null = null;
     
@@ -124,16 +133,28 @@ const userHistoryStr = myHistory.length
         setOutcome("dopamine");
         setMyScore((prev) => prev + 3);
         setOpponentScore((prev) => prev - 1)
+        if(roundRef.current < maxRounds){
+          playDopamine()
+        }
       } else if (mine === "cooperate" && theirs === "defect") {
         setOutcome("shame");
         setOpponentScore((prev) => prev + 3);
+        if(roundRef.current < maxRounds){
+          playShame()
+        }
         setMyScore((prev) => prev - 1)
       } else if (mine === "cooperate" && theirs === "cooperate") {
         setOutcome("hooray");
         setMyScore((prev) => prev + 2);
         setOpponentScore((prev) => prev + 2);
+        if(roundRef.current < maxRounds){
+          playHooray()
+        }
       } else {
         setOutcome("ruin");
+        if(roundRef.current < maxRounds){
+          playRuin()
+        }
       }
     }, 1000);
   };
