@@ -12,6 +12,7 @@ import {
   HomeIcon,
 } from "lucide-react";
 import Link from "next/link";
+import runChat from "../lib/groq";
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
@@ -28,6 +29,8 @@ export default function GameRoom() {
   const [opponentLocked, setOpponentLocked] = useState(false);
 
   const [gameState, setGameState] = useState<"deciding" | "revealing" | "result" | "ended">("deciding");
+  const [myHistory, setMyHistory] = useState<string[]>([])
+  const [AIHistory, setAIHistory] = useState<string[]>([])
   const [outcome, setOutcome] = useState<RoundResult>(null);
   const [myScore, setMyScore] = useState(0);
   const [opponentScore, setOpponentScore] = useState(0);
@@ -51,8 +54,6 @@ export default function GameRoom() {
           setGameState("ended");
         } 
       }
-     
-
     }
 
     return () => {
@@ -66,10 +67,55 @@ export default function GameRoom() {
 
     setMyChoice(action);
     setMyLocked(true);
+    console.log(Prompt)
+    const choice = await runChat(Prompt)
+    if(choice === 'cooperate' || choice === 'defect'){
+    setTimeout(() => {
+      setOpponentChoice(choice)
+      setOpponentLocked(true)
+      triggerRevealSequence(action, choice)
+    }, 2000)
+    }
+    
     
   };
 
+  const aiHistoryStr = AIHistory.length
+  ? AIHistory.map((h, i) => `Round ${i + 1}: ${h}`).join(", ")
+  : "None yet";
+
+const userHistoryStr = myHistory.length
+  ? myHistory.map((h, i) => `Round ${i + 1}: ${h}`).join(", ")
+  : "None yet";
+
+  const Prompt = `
+  You play iterated Prisoner's Dilemma vs user. Maximize your total score with a strategic, human-like mindset, not necessarily nice or nasty.
+
+  Payoffs (You/User):
+  Both defect: 0/0
+  Both cooperate: +2/+2
+  defect, cooperate: +3/-1
+  cooperate, defect: -1/+3
+
+  State:
+  Round: ${roundRef.current} (total rounds random (from 5 to 10))
+  Your score: ${opponentScore}
+  User score: ${myScore}
+
+  History:
+  Yours: ${aiHistoryStr}
+  User's: ${userHistoryStr}
+
+  Study the full history. Infer the user's pattern. Pick the single move that best raises your expected total score.
+
+  Reply with only one word: "cooperate" or "defect"
+  `
+
   const triggerRevealSequence = (mine: Choice, theirs: Choice) => {
+
+    setMyHistory((prev) => [...prev, mine]);
+    setAIHistory((prev) => [...prev, theirs]);
+
     setGameState("revealing");
     setTimeout(() => {
       setGameState("result");
@@ -210,12 +256,12 @@ export default function GameRoom() {
 
             <div className="flex gap-3">  
 
-            <Link 
-              href="/play"
+            <button 
+              onClick={() => window.location.reload()}
               className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
             >
               <RotateCcw className="w-4 h-4" /> Play Again
-            </Link>
+            </button>
 
 
             <Link
