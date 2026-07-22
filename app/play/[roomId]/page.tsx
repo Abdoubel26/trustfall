@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy,
@@ -11,10 +11,12 @@ import {
   Axe,
   RotateCcw,
   HomeIcon,
+  Scale,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "../..//lib/audio";
+import { useRouter } from "next/navigation";
 
 
 type Choice = "cooperate" | "defect";
@@ -22,11 +24,10 @@ type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
 
 export default function GameRoom() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const roomId = params?.roomId as string;
-  const opponentId = searchParams?.get("opponent") || "Opponent";
 
-  const [socketId, setSocketId] = useState("");
+
+  const router = useRouter()
   const [myChoice, setMyChoice] = useState<Choice | null>(null);
   const [opponentChoice, setOpponentChoice] = useState<Choice | null>(null);
 
@@ -40,6 +41,7 @@ export default function GameRoom() {
   const [maxRounds, setMaxRounds] = useState(7);
   const roundRef = useRef(1);
   const [roundDisplay, setRoundDisplay] = useState(1);
+  const [disconnected, setDisconnected] = useState(false)
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -49,7 +51,6 @@ export default function GameRoom() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      setSocketId(socket.id || "");
       socket.emit("joinRoom", { roomId });
     });
 
@@ -75,13 +76,40 @@ export default function GameRoom() {
       }
     });
 
+
+    socket.on("opponentLeft", () => {
+    stopBGM();
+    setDisconnected(true);
+    console.log("OPPONENT DISCONNECTED!")
+    console.log("OPPONENT DISCONNECTED!")
+    console.log("OPPONENT DISCONNECTED!")
+    console.log("OPPONENT DISCONNECTED!")
+    setTimeout(() => { 
+      router.push("/");
+    }, 3000);
+  });
+
+
     return () => {
+      if (roomId) {
+      socket.emit("leaveRoom", { roomId });
+    }
       socket.disconnect();
     };
   }, [roomId]);
 
   useEffect(() => {
-    if(gameState === "ended") return;
+
+     if (gameState === "deciding") {
+        playGameplayBGM();
+      } else if (gameState === "ended") {
+        stopBGM();
+        if (myScore > opponentScore) playWin();
+        else if (myScore < opponentScore) playLost();
+        else playRuin();
+        return;
+      }
+
 
     let TimeOut: ReturnType<typeof setTimeout> | null = null;
     
@@ -245,9 +273,8 @@ export default function GameRoom() {
               </>
             ) : (
               <>
-                <div className="w-16 h-16 my-2 rounded-full border-2 border-zinc-500 flex items-center justify-center text-zinc-400 text-2xl font-bold">
-                  =
-                </div>
+              <Scale className="w-16 h-16 my-2 text-gray-300 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]" />
+              
                 <h2 className="text-4xl md:text-5xl font-black tracking-wider text-zinc-300 uppercase">
                   IT&apos;S A TIE
                 </h2>
