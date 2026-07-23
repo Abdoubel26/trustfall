@@ -39,15 +39,15 @@ export default function PlayPage() {
     log("Connecting to the matchmaking table...");
     setStatus("searching");
 
-    // Connect to the custom standalone websocket server
-    const socket = io("http://localhost:5000");
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+
+    const socket = io(BACKEND_URL);
     socketRef.current = socket;
 
     socket.on("connect", () => {
       setSocketId(socket.id || "");
       log("Searching for another player...");
       
-      // Request matchmaking registration immediately upon connection
       socket.emit("match");
     });
 
