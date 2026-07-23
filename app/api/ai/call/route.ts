@@ -7,15 +7,15 @@ const groq = new Groq({
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, model } = await req.json();
     console.log("Chat request received:", prompt?.substring(0, 50) + "...");
 
-    if (!prompt) {
+    if (!prompt || !model) {
       return NextResponse.json({ error: "No prompt provided" }, { status: 400 });
     }
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: model,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.9,
       max_tokens: 2048,

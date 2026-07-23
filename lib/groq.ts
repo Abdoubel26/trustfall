@@ -1,11 +1,11 @@
-async function runChat(prompt: string): Promise<string> {
+async function runAI(prompt: string, model: string): Promise<string> {
   try {
     const res = await fetch("/api/ai/call", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, model }),
     });
 
     if (!res.ok) {
@@ -23,4 +23,4 @@ async function runChat(prompt: string): Promise<string> {
   }
 }
 
-export default runChat;
+export default runAI;

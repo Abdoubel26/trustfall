@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ShieldAlert, Users } from "lucide-react";
+import { Loader2, LogOut, ShieldAlert, Users } from "lucide-react";
 import { io, Socket } from "socket.io-client";
-import { playLoadingBGM } from "../lib/audio";
+import { playLoadingBGM } from "@/lib/audio";
+import Link from "next/link";
 
 export default function PlayPage() {
   const router = useRouter();
@@ -60,7 +61,7 @@ export default function PlayPage() {
 
       // Smooth redirection to the dynamic room route under /play/[roomId]
       setTimeout(() => {
-        router.push(`/play/${data.roomId}?opponent=${data.opponentId}`);
+        router.push(`/play/${data.roomId}`);
       }, 1500);
     });
 
@@ -80,6 +81,14 @@ export default function PlayPage() {
   return (
     <div className="bg-[url('/bg2.gif')] bg-cover bg-center min-h-screen flex flex-col items-center justify-center p-6 font-mono select-none relative overflow-hidden">
       <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-0" />
+
+      <Link
+        href="/"
+        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+      >
+        <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+        <span>LEAVE</span>
+      </Link>
 
       <div className="z-10 w-full max-w-md flex flex-col items-center">
         
@@ -169,7 +178,7 @@ export default function PlayPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-stone-500 max-w-xs leading-relaxed">
-          One more player needed. Will they cooperate… or defect?
+          One more player needed.
         </p>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy,
@@ -12,12 +12,20 @@ import {
   RotateCcw,
   HomeIcon,
   Scale,
+  LogOut
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import Link from "next/link";
-import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "../..//lib/audio";
-import { useRouter } from "next/navigation";
-
+import {
+  playDopamine,
+  playGameplayBGM,
+  playHooray,
+  playLost,
+  playRuin,
+  playShame,
+  playWin,
+  stopBGM,
+} from "@/lib/audio";
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
@@ -25,9 +33,8 @@ type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
 export default function GameRoom() {
   const params = useParams();
   const roomId = params?.roomId as string;
+  const router = useRouter();
 
-
-  const router = useRouter()
   const [myChoice, setMyChoice] = useState<Choice | null>(null);
   const [opponentChoice, setOpponentChoice] = useState<Choice | null>(null);
 
@@ -41,12 +48,12 @@ export default function GameRoom() {
   const [maxRounds, setMaxRounds] = useState(7);
   const roundRef = useRef(1);
   const [roundDisplay, setRoundDisplay] = useState(1);
-  const [disconnected, setDisconnected] = useState(false)
+  const [disconnected, setDisconnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
-    
+
     const socket = io("http://localhost:5000");
     socketRef.current = socket;
 
@@ -58,82 +65,71 @@ export default function GameRoom() {
       setOpponentLocked(true);
     });
 
-    socket.on("roomInitialized", (data: { maxRounds: number}) => {
-      setMaxRounds(data.maxRounds)
+    socket.on("roomInitialized", (data: { maxRounds: number }) => {
+      setMaxRounds(data.maxRounds);
     });
 
     socket.on("revealChoices", (data: { choices: Record<string, Choice> }) => {
       const myId = socket.id || "";
       const keys = Object.keys(data.choices);
       const targetId = keys.find((id) => id !== myId) || "";
-      
+
       const mine = data.choices[myId];
       const theirs = data.choices[targetId];
-      
+
       if (mine && theirs) {
         setOpponentChoice(theirs);
         triggerRevealSequence(mine, theirs);
       }
     });
 
-
     socket.on("opponentLeft", () => {
-    stopBGM();
-    setDisconnected(true);
-    console.log("OPPONENT DISCONNECTED!")
-    console.log("OPPONENT DISCONNECTED!")
-    console.log("OPPONENT DISCONNECTED!")
-    console.log("OPPONENT DISCONNECTED!")
-    setTimeout(() => { 
-      router.push("/");
-    }, 3000);
-  });
-
+      stopBGM();
+      setDisconnected(true);
+      if(gameState !== "ended") {
+        setTimeout(() => {
+        router.push("/");
+      }, 3000);
+    };
+    });
 
     return () => {
-      if (roomId) {
-      socket.emit("leaveRoom", { roomId });
-    }
+      socket.off("opponentLockedIn");
+      socket.off("roomInitialized");
+      socket.off("revealChoices");
+      socket.off("opponentLeft");
       socket.disconnect();
     };
   }, [roomId]);
 
   useEffect(() => {
+    if (gameState === "deciding") {
+      playGameplayBGM();
+    } else if (gameState === "ended") {
+      stopBGM();
+      if (myScore > opponentScore) playWin();
+      else if (myScore < opponentScore) playLost();
+      return;
+    }
 
-     if (gameState === "deciding") {
-        playGameplayBGM();
-      } else if (gameState === "ended") {
-        stopBGM();
-        if (myScore > opponentScore) playWin();
-        else if (myScore < opponentScore) playLost();
-        else playRuin();
-        return;
-      }
+    let timeOut: ReturnType<typeof setTimeout> | null = null;
 
-
-    let TimeOut: ReturnType<typeof setTimeout> | null = null;
-    
-    
     if (gameState === "result") {
-      if(roundRef.current < maxRounds){
-         TimeOut = setTimeout(() => {
-        resetNextRound();
+      if (roundRef.current < maxRounds) {
+        timeOut = setTimeout(() => {
+          resetNextRound();
         }, 3000);
-      }
-      else {
-        if(roundRef.current === maxRounds){
+      } else {
+        if (roundRef.current === maxRounds) {
           setGameState("ended");
-        } 
+        }
       }
-     
-
     }
 
     return () => {
-      if (TimeOut) clearTimeout(TimeOut);
+      if (timeOut) clearTimeout(timeOut);
     };
   }, [gameState]);
-
 
   const handleLockIn = async (action: Choice) => {
     if (myLocked || gameState !== "deciding") return;
@@ -154,44 +150,44 @@ export default function GameRoom() {
       if (mine === "defect" && theirs === "cooperate") {
         setOutcome("dopamine");
         setMyScore((prev) => prev + 3);
-        setOpponentScore((prev) => prev - 1)
-        if(roundRef.current < maxRounds){
-          playDopamine()
-        }
+        setOpponentScore((prev) => prev - 1);
+        if (roundRef.current < maxRounds) playDopamine();
       } else if (mine === "cooperate" && theirs === "defect") {
         setOutcome("shame");
         setOpponentScore((prev) => prev + 3);
-        setMyScore((prev) => prev - 1)
-        if(roundRef.current < maxRounds){
-          playShame()
-        }
+        setMyScore((prev) => prev - 1);
+        if (roundRef.current < maxRounds) playShame();
       } else if (mine === "cooperate" && theirs === "cooperate") {
         setOutcome("hooray");
         setMyScore((prev) => prev + 2);
         setOpponentScore((prev) => prev + 2);
-        if(roundRef.current < maxRounds){
-          playHooray()
-        }
+        if (roundRef.current < maxRounds) playHooray();
       } else {
         setOutcome("ruin");
-        if(roundRef.current < maxRounds){
-          playRuin()
-        }
+        if (roundRef.current < maxRounds) playRuin();
       }
     }, 1000);
   };
 
   const resetNextRound = () => {
-      roundRef.current += 1;
-      setRoundDisplay(roundRef.current);
-      setMyChoice(null);
-      setOpponentChoice(null);
-      setMyLocked(false);
-      setOpponentLocked(false);
-      setGameState("deciding");
-      setOutcome(null);
-    
+    roundRef.current += 1;
+    setRoundDisplay(roundRef.current);
+    setMyChoice(null);
+    setOpponentChoice(null);
+    setMyLocked(false);
+    setOpponentLocked(false);
+    setGameState("deciding");
+    setOutcome(null);
   };
+
+  if (disconnected && gameState !== "ended") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white font-mono p-4">
+        <h2 className="text-3xl font-black text-red-500 mb-2">OPPONENT DISCONNECTED</h2>
+        <p className="text-stone-400 text-sm">Redirecting you to the home page...</p>
+      </div>
+    );
+  }
 
   const ambientBg =
     outcome === "dopamine"
@@ -221,9 +217,16 @@ export default function GameRoom() {
       <div className="absolute inset-0 bg-linear-to-b from-slate-950/90 via-slate-950/70 to-slate-950/95" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-size-[100%_4px,6px_100%] opacity-20" />
 
+      <Link
+        href="/"
+        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+      >
+        <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+        <span>LEAVE</span>
+      </Link>
+
       <div className={`relative z-10 w-full max-w-5xl flex flex-col items-center gap-5 transition-shadow duration-1000 ${ambientGlow}`}>
 
-        {/* Score Header */}
         <div className="w-full flex justify-between items-center bg-black/75 border border-emerald-500/20 backdrop-blur-md px-5 py-4 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
           <div className="flex flex-col">
             <span className="text-[10px] text-emerald-500/70 tracking-[0.25em] uppercase mb-0.5">You</span>
@@ -231,12 +234,14 @@ export default function GameRoom() {
               {myScore}
             </span>
           </div>
+
           <div className="flex flex-col items-center">
             <span className="text-[10px] text-stone-500 tracking-[0.3em] uppercase mb-0.5">Round</span>
             <div className="text-3xl md:text-5xl font-bold text-transparent hover:cursor-pointer bg-clip-text font-toxia bg-linear-to-r from-red-500 via-amber-400 to-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]">
               {gameState !== "ended" ? roundDisplay.toString().padStart(2, "0") : "END"}
             </div>
           </div>
+
           <div className="flex flex-col items-end text-right">
             <span className="text-[10px] text-red-500/70 tracking-[0.25em] uppercase mb-0.5">Them</span>
             <span className="text-2xl md:text-3xl font-black text-red-400 tracking-tight">
@@ -273,8 +278,7 @@ export default function GameRoom() {
               </>
             ) : (
               <>
-              <Scale className="w-16 h-16 my-2 text-gray-300 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]" />
-              
+                <Scale className="w-16 h-16 my-2 text-gray-300 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]" />
                 <h2 className="text-4xl md:text-5xl font-black tracking-wider text-zinc-300 uppercase">
                   IT&apos;S A TIE
                 </h2>
@@ -297,30 +301,24 @@ export default function GameRoom() {
             </div>
 
             <div className="flex gap-3">  
+              <Link 
+                href="/play"
+                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+              >
+                <RotateCcw className="w-4 h-4" /> Play Again
+              </Link>
 
-            <Link 
-              href="/play"
-              className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-            >
-              <RotateCcw className="w-4 h-4" /> Play Again
-            </Link>
-
-
-            <Link
-            href="/"
-            className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-            >
-              <HomeIcon className="w-4 h-4" /> Go Home
-            </Link>
-
+              <Link
+                href="/"
+                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+              >
+                <HomeIcon className="w-4 h-4" /> Go Home
+              </Link>
             </div>
-
           </motion.div>
         ) : (
           <>
-            {/* Choice Cards */}
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Your Card */}
               <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${myLocked ? "bg-emerald-950/35 border-emerald-400/70 shadow-[0_0_40px_rgba(16,185,129,0.25)]" : "bg-slate-900/45 border-slate-700/60"}`}>
                 <div className="absolute top-4 left-4 flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${myLocked ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
@@ -368,7 +366,6 @@ export default function GameRoom() {
                 </AnimatePresence>
               </motion.div>
 
-              {/* Opponent Card */}
               <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${opponentLocked ? "bg-red-950/25 border-red-500/55 shadow-[0_0_35px_rgba(239,68,68,0.18)]" : "bg-slate-900/45 border-slate-700/60"}`}>
                 <div className="absolute top-4 left-4 flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${opponentLocked ? "bg-red-500 animate-pulse" : "bg-slate-600"}`} />
@@ -403,7 +400,6 @@ export default function GameRoom() {
               </motion.div>
             </div>
 
-            {/* Action / Outcome Panel */}
             <div className="w-full max-h-35 flex items-center justify-center bg-black/65 border border-slate-700/50 rounded-3xl p-5 backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
               <AnimatePresence mode="wait">
                 {gameState === "deciding" ? (

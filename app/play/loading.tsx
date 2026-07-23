@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ShieldAlert, Users } from "lucide-react";
 import { useEffect } from "react";
-import { playLoadingBGM } from "../lib/audio";
+import { playLoadingBGM } from "@/lib/audio";
 
 
 export default function Loading() {

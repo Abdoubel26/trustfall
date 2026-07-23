@@ -9,11 +9,12 @@ import {
   Lock,
   Axe,
   RotateCcw,
-  HomeIcon,
+  HomeIcon, 
+  LogOut
 } from "lucide-react";
 import Link from "next/link";
-import runChat from "../lib/groq";
-import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "../lib/audio";
+import runAI from "@/lib/groq";
+import { playDopamine, playGameplayBGM, playHooray, playLost, playRuin, playShame, playWin, stopBGM } from "@/lib/audio";
 
 type Choice = "cooperate" | "defect";
 type RoundResult = "dopamine" | "shame" | "hooray" | "ruin" | null;
@@ -46,7 +47,6 @@ export default function GameRoom() {
         stopBGM();
         if (myScore > opponentScore) playWin();
         else if (myScore < opponentScore) playLost();
-        else playRuin();
       }
 
     let TimeOut: ReturnType<typeof setTimeout> | null = null;
@@ -77,13 +77,17 @@ export default function GameRoom() {
     setMyChoice(action);
     setMyLocked(true);
     console.log(Prompt)
-    const choice = await runChat(Prompt)
+    const choice = await runAI(Prompt, "llama-3.3-70b-versatile")
     if(choice === 'cooperate' || choice === 'defect'){
     setTimeout(() => {
       setOpponentChoice(choice)
       setOpponentLocked(true)
       triggerRevealSequence(action, choice)
     }, 2000)
+    } else {
+      setOpponentChoice("cooperate")
+      setOpponentLocked(true)
+      triggerRevealSequence(action, "cooperate")
     }
     
     
@@ -106,8 +110,8 @@ const userHistoryStr = myHistory.length
   defect, cooperate: +3/-1
   cooperate, defect: -1/+3
 
-  State:
-  Round: ${roundRef.current} (total rounds random (from 5 to 10))
+  State: 
+  Round: ${roundRef.current} (total number of rounds is randomly chosen, strictly between 5 and 10; you do not know the exact remaining length, and neither does your opponent)
   Your score: ${opponentScore}
   User score: ${myScore}
 
@@ -115,9 +119,18 @@ const userHistoryStr = myHistory.length
   Yours: ${aiHistoryStr}
   User's: ${userHistoryStr}
 
-  Study the full history. Infer the user's pattern. Pick the single move that best raises your expected total score.
+  More Info:
+  - There may be noise (occasional accidental or random moves).
+  - Study the full history. Infer the user's pattern. Pick the single move that best raises your expected total score.
+  - Defection does not have to be a reaction to something the opponent did. You may voluntarily defect for your own strategic reasons
+  - Decide the single action that, given everything you see, gives you the highest expected total score long-term.
+  - Think long-term.
+  - Weigh the remaining uncertainty about how many rounds are left and the next possible move from the opponent.
+  - be human.
+  - try to guess the last round and see what best decision you can take there (it's strictly between round 5 and 10).
+  - be a strategic flip-flopper.
 
-  Reply with only one word: "cooperate" or "defect"
+  Reply with exactly: "cooperate" or "defect"
   `
 
   const triggerRevealSequence = (mine: Choice, theirs: Choice) => {
@@ -194,17 +207,24 @@ const userHistoryStr = myHistory.length
       : "";
 
   return (
-    <div className={`min-h-screen lg:max-h-screen flex flex-col items-center justify-between p-4 md:p-6 select-none font-mono transition-all duration-1000 relative overflow-hidden ${ambientBg}`}>
+   <div className={`min-h-screen lg:max-h-screen flex flex-col items-center justify-between p-4 md:p-6 select-none font-mono transition-all duration-1000 relative overflow-hidden ${ambientBg}`}>
       <div className="absolute inset-0 bg-[url('/bg.gif')] bg-cover bg-center opacity-40" />
       <div className="absolute inset-0 bg-linear-to-b from-slate-950/90 via-slate-950/70 to-slate-950/95" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-size-[100%_4px,6px_100%] opacity-20" />
 
+      <Link
+        href="/"
+        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+      >
+        <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+        <span>LEAVE</span>
+      </Link>
+
       <div className={`relative z-10 w-full max-w-5xl flex flex-col items-center gap-5 transition-shadow duration-1000 ${ambientGlow}`}>
 
-        {/* Score Header */}
         <div className="w-full flex justify-between items-center bg-black/75 border border-emerald-500/20 backdrop-blur-md px-5 py-4 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
           <div className="flex flex-col">
-            <span className="text-[10px] text-emerald-500/70 tracking-[0.25em] uppercase mb-0.5">You</span>
+            <span className="text-[15px] text-emerald-500/70 uppercase mb-0.5">You</span>
             <span className="text-2xl md:text-3xl font-black text-emerald-400 tracking-tight">
               {myScore}
             </span>
@@ -216,7 +236,7 @@ const userHistoryStr = myHistory.length
             </div>
           </div>
           <div className="flex flex-col items-end text-right">
-            <span className="text-[10px] text-red-500/70 tracking-[0.25em] uppercase mb-0.5">Them</span>
+            <span className="text-[15px] text-red-500/70 uppercase mb-0.5">llama-3.3</span>
             <span className="text-2xl md:text-3xl font-black text-red-400 tracking-tight">
               {opponentScore}
             </span>
@@ -276,30 +296,24 @@ const userHistoryStr = myHistory.length
             </div>
 
             <div className="flex gap-3">  
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+              >
+                <RotateCcw className="w-4 h-4" /> Play Again
+              </button>
 
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-            >
-              <RotateCcw className="w-4 h-4" /> Play Again
-            </button>
-
-
-            <Link
-            href="/"
-            className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-            >
-              <HomeIcon className="w-4 h-4" /> Go Home
-            </Link>
-
+              <Link
+                href="/"
+                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+              >
+                <HomeIcon className="w-4 h-4" /> Go Home
+              </Link>
             </div>
-
           </motion.div>
         ) : (
           <>
-            {/* Choice Cards */}
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Your Card */}
               <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${myLocked ? "bg-emerald-950/35 border-emerald-400/70 shadow-[0_0_40px_rgba(16,185,129,0.25)]" : "bg-slate-900/45 border-slate-700/60"}`}>
                 <div className="absolute top-4 left-4 flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${myLocked ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
@@ -347,7 +361,6 @@ const userHistoryStr = myHistory.length
                 </AnimatePresence>
               </motion.div>
 
-              {/* Opponent Card */}
               <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${opponentLocked ? "bg-red-950/25 border-red-500/55 shadow-[0_0_35px_rgba(239,68,68,0.18)]" : "bg-slate-900/45 border-slate-700/60"}`}>
                 <div className="absolute top-4 left-4 flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${opponentLocked ? "bg-red-500 animate-pulse" : "bg-slate-600"}`} />
@@ -382,7 +395,6 @@ const userHistoryStr = myHistory.length
               </motion.div>
             </div>
 
-            {/* Action / Outcome Panel */}
             <div className="w-full max-h-35 flex items-center justify-center bg-black/65 border border-slate-700/50 rounded-3xl p-5 backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
               <AnimatePresence mode="wait">
                 {gameState === "deciding" ? (
