@@ -1,6 +1,6 @@
 // lib/audio.ts
 
-let isMuted = false;
+let isMuted = true;
 let activeTrackName: string | null = null;
 let bgmAudio: HTMLAudioElement | null = null;
 
