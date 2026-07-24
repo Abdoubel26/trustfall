@@ -23,10 +23,9 @@ export default function PlayPage() {
   };
   
   useEffect(() => {
-      playLoadingBGM()
-    }, [])
+    playLoadingBGM();
+  }, []);
 
-  // Dots animation helper
   useEffect(() => {
     const dotInterval = setInterval(() => {
       setDots((d) => (d.length >= 3 ? "" : d + "."));
@@ -59,7 +58,6 @@ export default function PlayPage() {
       log(`Heading to the table...`);
       setStatus("matched");
 
-      // Smooth redirection to the dynamic room route under /play/[roomId]
       setTimeout(() => {
         router.push(`/play/${data.roomId}`);
       }, 1500);
@@ -79,28 +77,27 @@ export default function PlayPage() {
   }, [router]);
 
   return (
-    <div className="bg-[url('/bg2.gif')] bg-cover bg-center min-h-screen flex flex-col items-center justify-center p-6 font-mono select-none relative overflow-hidden">
+    <div className="bg-[url('/bg2.gif')] bg-cover bg-center min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 font-mono select-none relative overflow-x-hidden">
       <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-0" />
 
       <Link
         href="/"
-        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+        className="fixed top-4 left-4 sm:top-5 sm:left-5 z-50 flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
       >
         <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
         <span>LEAVE</span>
       </Link>
 
-      <div className="z-10 w-full max-w-md flex flex-col items-center">
+      <div className="z-10 w-full max-w-md flex flex-col items-center mt-12 sm:mt-0">
         
-        {/* Animated Radial Rings + Status Icon */}
-        <div className="relative w-44 h-44 mb-10 flex items-center justify-center">
+        <div className="relative w-36 h-36 sm:w-44 sm:h-44 mb-6 sm:mb-10 flex items-center justify-center">
           <motion.div
             className="absolute inset-0 border-2 border-emerald-500/25 rounded-full"
             animate={{ scale: [1, 1.18, 1], opacity: [0.25, 0.7, 0.25] }}
             transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute inset-5 border border-emerald-400/20 rounded-full"
+            className="absolute inset-4 sm:inset-5 border border-emerald-400/20 rounded-full"
             animate={{ scale: [1.15, 1, 1.15], opacity: [0.15, 0.45, 0.15] }}
             transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
           />
@@ -114,30 +111,29 @@ export default function PlayPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 className="flex flex-col items-center text-emerald-400"
               >
-                <Users className="w-12 h-12 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
-                <span className="mt-2 text-sm font-bold tracking-widest uppercase">Matched</span>
+                <Users className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+                <span className="mt-2 text-xs sm:text-sm font-bold tracking-widest uppercase">Matched</span>
               </motion.div>
             ) : status === "error" ? (
               <motion.div key="error" className="text-red-500 flex flex-col items-center gap-2">
-                <ShieldAlert className="w-11 h-11" />
-                <span className="text-xs tracking-widest font-bold uppercase">Connection Lost</span>
+                <ShieldAlert className="w-10 h-10 sm:w-11 sm:h-11" />
+                <span className="text-[10px] sm:text-xs tracking-widest font-bold uppercase">Connection Lost</span>
               </motion.div>
             ) : (
               <motion.div key="loading" className="flex flex-col items-center text-emerald-500">
-                <Loader2 className="w-12 h-12 animate-spin drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Status Card */}
-        <div className="w-full bg-black/70 border border-slate-700/60 rounded-2xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
-          <div className="flex items-center gap-2 text-xs text-stone-500 uppercase tracking-[0.2em] border-b border-slate-700/50 pb-3 mb-4">
+        <div className="w-full bg-black/70 border border-slate-700/60 rounded-2xl p-4 sm:p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs text-stone-500 uppercase tracking-[0.2em] border-b border-slate-700/50 pb-3 mb-4">
             <Users className="w-3.5 h-3.5 text-emerald-500/70" />
             <span>Finding an Opponent</span>
           </div>
 
-          <div className="space-y-2.5 text-sm min-h-27.5">
+          <div className="space-y-2.5 text-xs sm:text-sm min-h-24 sm:min-h-27.5">
             {terminalLogs.map((item, idx) => (
               <motion.div
                 key={idx}
@@ -154,8 +150,8 @@ export default function PlayPage() {
             ))}
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-700/40 flex items-center justify-between">
-            <span className="text-xs tracking-wide text-stone-400">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-700/40 flex items-center justify-between">
+            <span className="text-[11px] sm:text-xs tracking-wide text-stone-400">
               {status === "matched"
                 ? "Entering the room..."
                 : status === "error"
@@ -177,7 +173,7 @@ export default function PlayPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-stone-500 max-w-xs leading-relaxed">
+        <p className="mt-4 sm:mt-6 text-center text-xs text-stone-500 max-w-xs leading-relaxed">
           One more player needed.
         </p>
       </div>

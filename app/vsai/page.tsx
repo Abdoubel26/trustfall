@@ -76,7 +76,6 @@ export default function GameRoom() {
 
     setMyChoice(action);
     setMyLocked(true);
-    console.log(Prompt)
     const choice = await runAI(Prompt, "llama-3.3-70b-versatile")
     if(choice === 'cooperate' || choice === 'defect'){
     setTimeout(() => {
@@ -128,7 +127,6 @@ const userHistoryStr = myHistory.length
   - Weigh the remaining uncertainty about how many rounds are left and the next possible move from the opponent.
   - be human.
   - try to guess the last round and see what best decision you can take there (it's strictly between round 5 and 10).
-  - be a strategic flip-flopper.
 
   Reply with exactly: "cooperate" or "defect"
   `
@@ -207,325 +205,335 @@ const userHistoryStr = myHistory.length
       : "";
 
   return (
-   <div className={`min-h-screen lg:max-h-screen flex flex-col items-center justify-between p-4 md:p-6 select-none font-mono transition-all duration-1000 relative overflow-hidden ${ambientBg}`}>
-      <div className="absolute inset-0 bg-[url('/bg.gif')] bg-cover bg-center opacity-40" />
-      <div className="absolute inset-0 bg-linear-to-b from-slate-950/90 via-slate-950/70 to-slate-950/95" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-size-[100%_4px,6px_100%] opacity-20" />
+   <div className="min-h-screen w-full flex flex-col items-center justify-between p-3 sm:p-4 md:p-6 select-none font-mono transition-all duration-1000 relative overflow-x-hidden overflow-y-auto bg-slate-950">
+  {/* Background overlays */}
+  <div className="absolute inset-0 bg-[url('/bg.gif')] bg-cover bg-center opacity-40" />
+  <div className="absolute inset-0 bg-linear-to-b from-slate-950/90 via-slate-950/70 to-slate-950/95" />
+  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-size-[100%_4px,6px_100%] opacity-20" />
 
-      <Link
-        href="/"
-        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+  {/* Top Left Navigation Link */}
+  <Link
+    href="/"
+    className="fixed top-3 left-3 sm:top-5 sm:left-5 z-50 flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-stone-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30 transition-all duration-200 text-xs font-bold tracking-wider backdrop-blur-md shadow-lg group"
+  >
+    <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+    <span>LEAVE</span>
+  </Link>
+
+  {/* Main Container */}
+  <div className={`relative z-10 w-full max-w-5xl flex flex-col items-center gap-4 sm:gap-5 transition-shadow duration-1000 my-auto pt-12 sm:pt-0 ${ambientGlow}`}>
+
+    {/* Header / Scoreboard */}
+    <div className="w-full flex justify-between items-center bg-black/75 border border-emerald-500/20 backdrop-blur-md px-3 sm:px-5 py-3 sm:py-4 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
+      <div className="flex flex-col">
+        <span className="text-xs sm:text-[15px] text-emerald-500/70 uppercase mb-0.5">You</span>
+        <span className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-400 tracking-tight">
+          {myScore}
+        </span>
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="text-[9px] sm:text-[10px] text-stone-500 tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-0.5">Round</span>
+        <div className="text-2xl sm:text-3xl md:text-5xl font-bold text-transparent hover:cursor-pointer bg-clip-text font-toxia bg-linear-to-r from-red-500 via-amber-400 to-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]">
+          {gameState !== "ended" ? roundDisplay.toString().padStart(2, "0") : "END"}
+        </div>
+      </div>
+      <div className="flex flex-col items-end text-right">
+        <span className="text-xs sm:text-[15px] text-red-500/70 uppercase mb-0.5">llama-3.3</span>
+        <span className="text-xl sm:text-2xl md:text-3xl font-black text-red-400 tracking-tight">
+          {opponentScore}
+        </span>
+      </div>
+    </div>
+
+    {/* Game View Switcher */}
+    {gameState === "ended" ? (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        className="flex flex-col items-center justify-center min-h-[350px] sm:min-h-95 w-full max-w-2xl mx-auto p-5 sm:p-8 border border-slate-700/60 bg-slate-950/85 rounded-3xl relative overflow-hidden backdrop-blur-md text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]"
       >
-        <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-        <span>LEAVE</span>
-      </Link>
-
-      <div className={`relative z-10 w-full max-w-5xl flex flex-col items-center gap-5 transition-shadow duration-1000 ${ambientGlow}`}>
-
-        <div className="w-full flex justify-between items-center bg-black/75 border border-emerald-500/20 backdrop-blur-md px-5 py-4 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
-          <div className="flex flex-col">
-            <span className="text-[15px] text-emerald-500/70 uppercase mb-0.5">You</span>
-            <span className="text-2xl md:text-3xl font-black text-emerald-400 tracking-tight">
-              {myScore}
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] text-stone-500 tracking-[0.3em] uppercase mb-0.5">Round</span>
-            <div className="text-3xl md:text-5xl font-bold text-transparent hover:cursor-pointer bg-clip-text font-toxia bg-linear-to-r from-red-500 via-amber-400 to-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]">
-              {gameState !== "ended" ? roundDisplay.toString().padStart(2, "0") : "END"}
+        {myScore > opponentScore ? (
+          <>
+            <Trophy className="w-12 h-12 sm:w-16 sm:h-16 my-2 text-amber-300 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.4)] uppercase">
+              YOU WON
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-400 max-w-sm mt-2 sm:mt-3 leading-relaxed">
+              Ruthless. Calculated. Slightly evil.
+            </p>
+          </>
+        ) : myScore < opponentScore ? (
+          <>
+            <Skull className="w-12 h-12 sm:w-16 sm:h-16 my-2 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]" />
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-wider text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.4)] uppercase">
+              YOU LOST
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-400 max-w-sm mt-2 sm:mt-3 leading-relaxed">
+              Too trusting. Or just unlucky. Either way… ouch.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 my-2 rounded-full border-2 border-zinc-500 flex items-center justify-center text-zinc-400 text-xl sm:text-2xl font-bold">
+              =
             </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-wider text-zinc-300 uppercase">
+              IT&apos;S A TIE
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-400 max-w-sm mt-2 sm:mt-3 leading-relaxed">
+              Equal chaos. Equal vibes. Peak humanity.
+            </p>
+          </>
+        )}
+
+        <div className="flex items-center gap-3 sm:gap-6 my-6 sm:my-8 w-full justify-center">
+          <div className="flex flex-col p-3 sm:p-4 bg-slate-900/60 border border-slate-700/50 rounded-2xl min-w-24 sm:min-w-28">
+            <span className="text-[9px] sm:text-[10px] text-stone-500 font-bold tracking-widest uppercase">Your Score</span>
+            <span className={`text-2xl sm:text-3xl font-black mt-1 ${myScore >= opponentScore ? "text-emerald-400" : "text-stone-300"}`}>{myScore}</span>
           </div>
-          <div className="flex flex-col items-end text-right">
-            <span className="text-[15px] text-red-500/70 uppercase mb-0.5">llama-3.3</span>
-            <span className="text-2xl md:text-3xl font-black text-red-400 tracking-tight">
-              {opponentScore}
-            </span>
+          <div className="text-sm sm:text-lg font-bold text-slate-600 font-mono tracking-widest">VS</div>
+          <div className="flex flex-col p-3 sm:p-4 bg-slate-900/60 border border-slate-700/50 rounded-2xl min-w-24 sm:min-w-28">
+            <span className="text-[9px] sm:text-[10px] text-stone-500 font-bold tracking-widest uppercase">Opponent</span>
+            <span className={`text-2xl sm:text-3xl font-black mt-1 ${opponentScore >= myScore ? "text-emerald-400" : "text-stone-300"}`}>{opponentScore}</span>
           </div>
         </div>
 
-        {gameState === "ended" ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            className="flex flex-col items-center justify-center min-h-95 w-full max-w-2xl mx-auto p-8 border border-slate-700/60 bg-slate-950/85 rounded-3xl relative overflow-hidden backdrop-blur-md text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"> 
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
           >
-            {myScore > opponentScore ? (
-              <>
-                <Trophy className="w-16 h-16 my-2 text-amber-300 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.4)] uppercase">
-                  YOU WON
-                </h2>
-                <p className="text-sm text-stone-400 max-w-sm mt-3 leading-relaxed">
-                  Ruthless. Calculated. Slightly evil.
-                </p>
-              </>
-            ) : myScore < opponentScore ? (
-              <>
-                <Skull className="w-16 h-16 my-2 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.45)]" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-wider text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.4)] uppercase">
-                  YOU LOST
-                </h2>
-                <p className="text-sm text-stone-400 max-w-sm mt-3 leading-relaxed">
-                  Too trusting. Or just unlucky. Either way… ouch.
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="w-16 h-16 my-2 rounded-full border-2 border-zinc-500 flex items-center justify-center text-zinc-400 text-2xl font-bold">
-                  =
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black tracking-wider text-zinc-300 uppercase">
-                  IT&apos;S A TIE
-                </h2>
-                <p className="text-sm text-stone-400 max-w-sm mt-3 leading-relaxed">
-                  Equal chaos. Equal vibes. Peak humanity.
-                </p>
-              </>
-            )}
+            <RotateCcw className="w-4 h-4" /> Play Again
+          </button>
 
-            <div className="flex items-center gap-6 my-8 w-full justify-center">
-              <div className="flex flex-col p-4 bg-slate-900/60 border border-slate-700/50 rounded-2xl min-w-28">
-                <span className="text-[10px] text-stone-500 font-bold tracking-widest uppercase">Your Score</span>
-                <span className={`text-3xl font-black mt-1 ${myScore >= opponentScore ? "text-emerald-400" : "text-stone-300"}`}>{myScore}</span>
-              </div>
-              <div className="text-lg font-bold text-slate-600 font-mono tracking-widest">VS</div>
-              <div className="flex flex-col p-4 bg-slate-900/60 border border-slate-700/50 rounded-2xl min-w-28">
-                <span className="text-[10px] text-stone-500 font-bold tracking-widest uppercase">Opponent</span>
-                <span className={`text-3xl font-black mt-1 ${opponentScore >= myScore ? "text-emerald-400" : "text-stone-300"}`}>{opponentScore}</span>
-              </div>
+          <Link
+            href="/"
+            className="px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
+          >
+            <HomeIcon className="w-4 h-4" /> Go Home
+          </Link>
+        </div>
+      </motion.div>
+    ) : (
+      <>
+        {/* Play Cards Grid */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
+          
+          {/* User Card */}
+          <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-4 sm:p-6 rounded-3xl h-56 sm:h-72 transition-all duration-700 overflow-hidden ${myLocked ? "bg-emerald-950/35 border-emerald-400/70 shadow-[0_0_40px_rgba(16,185,129,0.25)]" : "bg-slate-900/45 border-slate-700/60"}`}>
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${myLocked ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
+              <span className="text-[10px] text-emerald-500/70 font-bold tracking-[0.25em] uppercase">You</span>
             </div>
-
-            <div className="flex gap-3">  
-              <button 
-                onClick={() => window.location.reload()}
-                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-              >
-                <RotateCcw className="w-4 h-4" /> Play Again
-              </button>
-
-              <Link
-                href="/"
-                className="px-7 py-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_30px_rgba(16,185,129,0.35)]"
-              >
-                <HomeIcon className="w-4 h-4" /> Go Home
-              </Link>
-            </div>
-          </motion.div>
-        ) : (
-          <>
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5">
-              <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${myLocked ? "bg-emerald-950/35 border-emerald-400/70 shadow-[0_0_40px_rgba(16,185,129,0.25)]" : "bg-slate-900/45 border-slate-700/60"}`}>
-                <div className="absolute top-4 left-4 flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-full ${myLocked ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
-                  <span className="text-[10px] text-emerald-500/70 font-bold tracking-[0.25em] uppercase">You</span>
-                </div>
-                <AnimatePresence mode="wait">
-                  {gameState !== "result" ? (
-                    <motion.div key="deciding" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
-                      <div className={`w-28 h-28 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-5 font-bold text-lg tracking-widest ${myLocked ? "border-emerald-400 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.4)]" : "border-slate-600 text-slate-500"}`}>
-                        {myLocked ? (
-                          <motion.div>
-                            {myChoice === "cooperate" ? (
-                              <Handshake className="w-16 h-16 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
-                            ) : (
-                              <Axe className="w-16 h-16 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
-                            )}
-                          </motion.div>
+            <AnimatePresence mode="wait">
+              {gameState !== "result" ? (
+                <motion.div key="deciding" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
+                  <div className={`w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-3 sm:mb-5 font-bold text-lg tracking-widest ${myLocked ? "border-emerald-400 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.4)]" : "border-slate-600 text-slate-500"}`}>
+                    {myLocked ? (
+                      <motion.div>
+                        {myChoice === "cooperate" ? (
+                          <Handshake className="w-10 h-10 sm:w-16 sm:h-16 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
                         ) : (
-                          <span className="text-3xl text-slate-500">?</span>
+                          <Axe className="w-10 h-10 sm:w-16 sm:h-16 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
                         )}
-                      </div>
-                      <p className="text-xs text-stone-400 tracking-wide font-medium">
-                        {myLocked
-                          ? myChoice === "cooperate"
-                            ? "LOCKED IN • COOPERATE"
-                            : "LOCKED IN • DEFECT"
-                          : "WAITING FOR YOUR MOVE"}
-                      </p>
-                    </motion.div>
+                      </motion.div>
+                    ) : (
+                      <span className="text-2xl sm:text-3xl text-slate-500">?</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-stone-400 tracking-wide font-medium">
+                    {myLocked
+                      ? myChoice === "cooperate"
+                        ? "LOCKED IN • COOPERATE"
+                        : "LOCKED IN • DEFECT"
+                      : "WAITING FOR YOUR MOVE"}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div key="revealed" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 120, damping: 14 }} className="text-center">
+                  {myChoice === "cooperate" ? (
+                    <div className="text-emerald-400">
+                      <Handshake className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
+                      <span className="text-xl sm:text-2xl font-bold tracking-widest">COOPERATED</span>
+                    </div>
                   ) : (
-                    <motion.div key="revealed" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 120, damping: 14 }} className="text-center">
-                      {myChoice === "cooperate" ? (
-                        <div className="text-emerald-400">
-                          <Handshake className="w-20 h-20 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
-                          <span className="text-2xl font-bold tracking-widest">COOPERATED</span>
-                        </div>
-                      ) : (
-                        <div className="text-red-500">
-                          <Axe className="w-20 h-20 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
-                          <span className="text-2xl font-bold tracking-widest">DEFECTED</span>
-                        </div>
-                      )}
-                    </motion.div>
+                    <div className="text-red-500">
+                      <Axe className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+                      <span className="text-xl sm:text-2xl font-bold tracking-widest">DEFECTED</span>
+                    </div>
                   )}
-                </AnimatePresence>
-              </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
-              <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-6 rounded-3xl h-72 transition-all duration-700 overflow-hidden ${opponentLocked ? "bg-red-950/25 border-red-500/55 shadow-[0_0_35px_rgba(239,68,68,0.18)]" : "bg-slate-900/45 border-slate-700/60"}`}>
-                <div className="absolute top-4 left-4 flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-full ${opponentLocked ? "bg-red-500 animate-pulse" : "bg-slate-600"}`} />
-                  <span className="text-[10px] text-red-500/70 font-bold tracking-[0.25em] uppercase">Opponent</span>
+          {/* Opponent Card */}
+          <motion.div layout className={`relative flex flex-col items-center justify-center border-2 p-4 sm:p-6 rounded-3xl h-56 sm:h-72 transition-all duration-700 overflow-hidden ${opponentLocked ? "bg-red-950/25 border-red-500/55 shadow-[0_0_35px_rgba(239,68,68,0.18)]" : "bg-slate-900/45 border-slate-700/60"}`}>
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${opponentLocked ? "bg-red-500 animate-pulse" : "bg-slate-600"}`} />
+              <span className="text-[10px] text-red-500/70 font-bold tracking-[0.25em] uppercase">Opponent</span>
+            </div>
+            <AnimatePresence mode="wait">
+              {gameState === "deciding" || gameState === "revealing" ? (
+                <motion.div key="opp-deciding" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
+                  <div className={`w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-3 sm:mb-5 font-bold text-lg tracking-widest ${opponentLocked ? "border-red-500 text-red-500 shadow-[0_0_25px_rgba(239,68,68,0.35)] animate-pulse" : "border-slate-600 text-slate-500"}`}>
+                    {opponentLocked ? <Lock className="w-8 h-8 sm:w-11 sm:h-11" /> : <span className="text-xl sm:text-2xl tracking-widest">•••</span>}
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-stone-400 tracking-wide font-medium">
+                    {opponentLocked ? "OPPONENT ACTED" : "STILL DECIDING..."}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div key="opp-revealed" initial={{ rotateY: -90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 120, damping: 14 }} className="text-center">
+                  {opponentChoice === "cooperate" ? (
+                    <div className="text-emerald-400">
+                      <Handshake className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
+                      <span className="text-xl sm:text-2xl font-bold tracking-widest">COOPERATED</span>
+                    </div>
+                  ) : (
+                    <div className="text-red-500">
+                      <Axe className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+                      <span className="text-xl sm:text-2xl font-bold tracking-widest">DEFECTED</span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        {/* Action / Outcome Panel */}
+        <div className="w-full min-h-28 sm:max-h-35 flex items-center justify-center bg-black/65 border border-slate-700/50 rounded-3xl p-4 sm:p-5 backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <AnimatePresence mode="wait">
+            {gameState === "deciding" ? (
+              <motion.div key="actions" initial={{ opacity: 0, y: 9 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-row gap-3 sm:gap-5 w-full justify-center">
+                <button
+                  disabled={myLocked}
+                  onClick={() => handleLockIn("cooperate")}
+                  className="group relative cursor-pointer flex-1 max-w-xs py-3 sm:py-4 px-3 sm:px-5 rounded-2xl border-2 border-emerald-500/55 bg-emerald-950/25 hover:bg-emerald-900/35 text-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.35)] hover:-translate-y-1 active:translate-y-0"
+                >
+                  <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+                    <Handshake className="w-6 h-6 sm:w-9 sm:h-9 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    <span className="text-xs sm:text-lg font-bold font-toxia tracking-[0.1em] sm:tracking-[0.2em]">COOPERATE</span>
+                  </div>
+                </button>
+                <button
+                  disabled={myLocked}
+                  onClick={() => handleLockIn("defect")}
+                  className="group relative cursor-pointer flex-1 max-w-xs py-3 sm:py-4 px-3 sm:px-5 rounded-2xl border-2 border-red-500/55 bg-red-950/25 hover:bg-red-900/35 text-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:border-red-400 hover:shadow-[0_0_30px_rgba(239,68,68,0.35)] hover:-translate-y-1 active:translate-y-0"
+                >
+                  <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+                    <Axe className="w-6 h-6 sm:w-9 sm:h-9 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                    <span className="text-xs sm:text-lg font-bold font-toxia tracking-wider sm:tracking-widest">DEFECT</span>
+                  </div>
+                </button>
+              </motion.div>
+            ) : gameState === "revealing" ? (
+              <motion.div key="revealing" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-2 sm:gap-3 py-2">
+                <div className="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 tracking-[0.2em] sm:tracking-[0.3em] animate-pulse text-center">
+                  DECRYPTING CHOICES
                 </div>
-                <AnimatePresence mode="wait">
-                  {gameState === "deciding" || gameState === "revealing" ? (
-                    <motion.div key="opp-deciding" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
-                      <div className={`w-28 h-28 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-5 font-bold text-lg tracking-widest ${opponentLocked ? "border-red-500 text-red-500 shadow-[0_0_25px_rgba(239,68,68,0.35)] animate-pulse" : "border-slate-600 text-slate-500"}`}>
-                        {opponentLocked ? <Lock className="w-11 h-11" /> : <span className="text-2xl tracking-widest">•••</span>}
-                      </div>
-                      <p className="text-xs text-stone-400 tracking-wide font-medium">
-                        {opponentLocked ? "OPPONENT ACTED" : "STILL DECIDING..."}
-                      </p>
-                    </motion.div>
-                  ) : (
-                    <motion.div key="opp-revealed" initial={{ rotateY: -90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 120, damping: 14 }} className="text-center">
-                      {opponentChoice === "cooperate" ? (
-                        <div className="text-emerald-400">
-                          <Handshake className="w-20 h-20 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
-                          <span className="text-2xl font-bold tracking-widest">COOPERATED</span>
-                        </div>
-                      ) : (
-                        <div className="text-red-500">
-                          <Axe className="w-20 h-20 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
-                          <span className="text-2xl font-bold tracking-widest">DEFECTED</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="flex gap-1.5">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400"
+                      animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
+                      transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.12 }}
+                    />
+                  ))}
+                </div>
               </motion.div>
-            </div>
-
-            <div className="w-full max-h-35 flex items-center justify-center bg-black/65 border border-slate-700/50 rounded-3xl p-5 backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-              <AnimatePresence mode="wait">
-                {gameState === "deciding" ? (
-                  <motion.div key="actions" initial={{ opacity: 0, y: 9 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="flex flex-col sm:flex-row gap-5 w-full justify-center">
-                    <button
-                      disabled={myLocked}
-                      onClick={() => handleLockIn("cooperate")}
-                      className="group relative cursor-pointer flex-1 max-w-xs py-4 px-5 rounded-2xl border-2 border-emerald-500/55 bg-emerald-950/25 hover:bg-emerald-900/35 text-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.35)] hover:-translate-y-1 active:translate-y-0"
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <Handshake className="w-9 h-9 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        <span className="text-lg font-bold font-toxia tracking-[0.2em]">COOPERATE</span>
-                      </div>
-                    </button>
-                    <button
-                      disabled={myLocked}
-                      onClick={() => handleLockIn("defect")}
-                      className="group relative cursor-pointer flex-1 max-w-xs py-4 px-5 rounded-2xl border-2 border-red-500/55 bg-red-950/25 hover:bg-red-900/35 text-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:border-red-400 hover:shadow-[0_0_30px_rgba(239,68,68,0.35)] hover:-translate-y-1 active:translate-y-0"
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <Axe className="w-9 h-9 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                        <span className="text-lg font-bold font-toxia tracking-widest">DEFECT</span>
-                      </div>
-                    </button>
-                  </motion.div>
-                ) : gameState === "revealing" ? (
-                  <motion.div key="revealing" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-3">
-                    <div className="text-2xl md:text-3xl font-bold text-emerald-400 tracking-[0.3em] animate-pulse">
-                      DECRYPTING CHOICES
-                    </div>
-                    <div className="flex gap-1.5">
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <motion.div
-                          key={i}
-                          className="w-2 h-2 rounded-full bg-emerald-400"
-                          animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
-                          transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.12 }}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="outcome"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 140, damping: 18 }}
-                    className="flex flex-col sm:flex-row items-center justify-between w-full gap-5 px-2"
+            ) : (
+              <motion.div
+                key="outcome"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 140, damping: 18 }}
+                className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-5 px-1 sm:px-2"
+              >
+                <div className="flex items-center gap-3 sm:gap-4 text-center sm:text-left">
+                  <div
+                    className={`p-2.5 sm:p-3.5 rounded-2xl border shrink-0 ${
+                      outcome === "dopamine"
+                        ? "bg-amber-500/10 border-amber-400/40 text-amber-400"
+                        : outcome === "shame"
+                        ? "bg-red-500/10 border-red-500/40 text-red-500"
+                        : outcome === "hooray"
+                        ? "bg-emerald-500/10 border-emerald-400/40 text-emerald-400"
+                        : "bg-zinc-500/10 border-zinc-500/40 text-zinc-400"
+                    }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3.5 rounded-2xl border ${
-                          outcome === "dopamine"
-                            ? "bg-amber-500/10 border-amber-400/40 text-amber-400"
-                            : outcome === "shame"
-                            ? "bg-red-500/10 border-red-500/40 text-red-500"
-                            : outcome === "hooray"
-                            ? "bg-emerald-500/10 border-emerald-400/40 text-emerald-400"
-                            : "bg-zinc-500/10 border-zinc-500/40 text-zinc-400"
-                        }`}
-                      >
-                        {outcome === "dopamine" && <Trophy className="w-10 h-10" />}
-                        {outcome === "shame" && <ShieldAlert className="w-10 h-10" />}
-                        {outcome === "hooray" && <Handshake className="w-10 h-10" />}
-                        {outcome === "ruin" && <Skull className="w-10 h-10" />}
-                      </div>
+                    {outcome === "dopamine" && <Trophy className="w-7 h-7 sm:w-10 sm:h-10" />}
+                    {outcome === "shame" && <ShieldAlert className="w-7 h-7 sm:w-10 sm:h-10" />}
+                    {outcome === "hooray" && <Handshake className="w-7 h-7 sm:w-10 sm:h-10" />}
+                    {outcome === "ruin" && <Skull className="w-7 h-7 sm:w-10 sm:h-10" />}
+                  </div>
+                  <div>
+                    {outcome === "dopamine" && (
                       <div>
-                        {outcome === "dopamine" && (
-                          <div>
-                            <h3 className="text-xl md:text-2xl font-bold text-amber-400 tracking-wide drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]">
-                              THE BETRAYAL PAID OFF 💰
-                            </h3>
-                            <p className="text-xs text-amber-300/70 mt-1 tracking-wide">
-                              They trusted you. Big mistake.
-                            </p>
-                          </div>
-                        )}
-                        {outcome === "shame" && (
-                          <div>
-                            <h3 className="text-xl md:text-2xl font-bold text-red-500 tracking-wide drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]">
-                              YOU GOT BAMBOOZLED
-                            </h3>
-                            <p className="text-xs text-red-400/70 mt-1 tracking-wide">
-                              Brought a handshake to an axe fight.
-                            </p>
-                          </div>
-                        )}
-                        {outcome === "hooray" && (
-                          <div>
-                            <h3 className="text-xl md:text-2xl font-bold text-emerald-400 tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
-                              NO BACKSTABBING TODAY 🤝
-                            </h3>
-                            <p className="text-xs text-emerald-400/70 mt-1 tracking-wide">
-                              Friendship is magic… until next round.
-                            </p>
-                          </div>
-                        )}
-                        {outcome === "ruin" && (
-                          <div>
-                            <h3 className="text-xl md:text-2xl font-bold text-zinc-300 tracking-wide">
-                              CLOWN TO A CLOWN 🤡
-                            </h3>
-                            <p className="text-xs text-zinc-500 mt-1 tracking-wide">
-                              Nobody wins. Peak entertainment.
-                            </p>
-                          </div>
-                        )}
+                        <h3 className="text-base sm:text-xl md:text-2xl font-bold text-amber-400 tracking-wide drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]">
+                          THE BETRAYAL PAID OFF 💰
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-amber-300/70 mt-0.5 sm:mt-1 tracking-wide">
+                          They trusted you. Big mistake.
+                        </p>
                       </div>
-                    </div>
+                    )}
+                    {outcome === "shame" && (
+                      <div>
+                        <h3 className="text-base sm:text-xl md:text-2xl font-bold text-red-500 tracking-wide drop-shadow-[0_0_12px_rgba(239,68,68,0.5)]">
+                          YOU GOT BAMBOOZLED
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-red-400/70 mt-0.5 sm:mt-1 tracking-wide">
+                          Brought a handshake to an axe fight.
+                        </p>
+                      </div>
+                    )}
+                    {outcome === "hooray" && (
+                      <div>
+                        <h3 className="text-base sm:text-xl md:text-2xl font-bold text-emerald-400 tracking-wide drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]">
+                          NO BACKSTABBING TODAY 🤝
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-emerald-400/70 mt-0.5 sm:mt-1 tracking-wide">
+                          Friendship is magic… until next round.
+                        </p>
+                      </div>
+                    )}
+                    {outcome === "ruin" && (
+                      <div>
+                        <h3 className="text-base sm:text-xl md:text-2xl font-bold text-zinc-300 tracking-wide">
+                          CLOWN TO A CLOWN 🤡
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5 sm:mt-1 tracking-wide">
+                          Nobody wins. Peak entertainment.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                    <div className="w-full sm:w-48 flex flex-col gap-1.5 shrink-0 bg-slate-950/50 border border-slate-800/80 rounded-xl p-3">
-                      <div className="flex justify-between items-center text-[10px] tracking-widest font-bold">
-                        <span className="text-stone-400 uppercase">Next Round</span>
-                        <span className="text-emerald-500/70 animate-pulse uppercase">Loading</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden relative">
-                        <motion.div
-                          className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"
-                          initial={{ width: "100%" }}
-                          animate={{ width: "0%" }}
-                          transition={{ duration: 3, ease: "linear" }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+                <div className="w-full sm:w-48 flex flex-col gap-1.5 shrink-0 bg-slate-950/50 border border-slate-800/80 rounded-xl p-2.5 sm:p-3">
+                  <div className="flex justify-between items-center text-[9px] sm:text-[10px] tracking-widest font-bold">
+                    <span className="text-stone-400 uppercase">Next Round</span>
+                    <span className="text-emerald-500/70 animate-pulse uppercase">Loading</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden relative">
+                    <motion.div
+                      className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"
+                      initial={{ width: "100%" }}
+                      animate={{ width: "0%" }}
+                      transition={{ duration: 3, ease: "linear" }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </>
+    )}
+  </div>
+</div>
   );
 }

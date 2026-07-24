@@ -14,55 +14,69 @@ export default function Home() {
   }, []);
 
   const handleToggleMute = () => {
-    const mutedState = toggleMute(); // returns new boolean state
+    const mutedState = toggleMute(); 
     setIsMuted(mutedState);
   };
 
   return (
-    <div className="bg-[url('/bg.gif')] bg-cover bg-center min-h-screen flex flex-col justify-center p-6 select-none">
+    <div className="bg-[url('/bg.gif')] bg-cover bg-center min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 select-none overflow-x-hidden relative">
       
-      {/* Sound Toggle Button */}
+
       <button 
         onClick={handleToggleMute}
-        className="fixed top-6 right-6 p-3 rounded-full bg-slate-900/60 border border-stone-700 hover:border-emerald-500 transition-colors cursor-pointer"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 p-2.5 sm:p-3 rounded-full bg-slate-900/60 border border-stone-700 hover:border-emerald-500 transition-colors cursor-pointer z-50 backdrop-blur-sm"
         title={isMuted ? "Unmute Sound" : "Mute Sound"}
       >
         {isMuted ? (
-          <VolumeX className="h-8 w-8 text-red-400" />
+          <VolumeX className="h-6 w-6 sm:h-8 sm:w-8 text-red-400" />
         ) : (
-          <Volume2 className="h-8 w-8 text-emerald-400" />
+          <Volume2 className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-400" />
         )}
       </button>
 
-      <div className="text-center mb-12">
-        <h1 className="text-[5rem] md:text-[10rem] font-bold tracking-widest uppercase font-toxia text-transparent bg-clip-text bg-linear-to-b from-stone-900 to-black [-webkit-text-stroke:2px_rgba(239,68,68,0.8)] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-all duration-500 hover:[-webkit-text-stroke:2px_#ffffff] hover:drop-shadow-[0_0_25px_rgba(16,185,129,0.8)] group cursor-pointer">
+
+      <div className="text-center mb-8 sm:mb-12 mt-12 sm:mt-0">
+        <h1 className="text-[3.2rem] xs:text-[4rem] sm:text-[6rem] md:text-[10rem] font-bold tracking-widest uppercase font-toxia text-transparent bg-clip-text bg-linear-to-b from-stone-900 to-black [-webkit-text-stroke:1.5px_rgba(239,68,68,0.8)] md:[-webkit-text-stroke:2px_rgba(239,68,68,0.8)] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-all duration-500 hover:[-webkit-text-stroke:2px_#ffffff] hover:drop-shadow-[0_0_25px_rgba(16,185,129,0.8)] group cursor-pointer leading-none">
           Trust
-          <span className="text-red-600 font-bold [-webkit-text-stroke:2px_#000000] drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] animate-pulse">
+          <span className="text-red-600 font-bold [-webkit-text-stroke:1.5px_#000000] md:[-webkit-text-stroke:2px_#000000] drop-shadow-[0_0_20px_rgba(220,38,38,0.8)] animate-pulse">
             fall
           </span>
         </h1>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto border-emerald-500/30 backdrop-blur-md rounded-xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-row gap-4">
+
+      <div className="w-full max-w-4xl mx-auto border-emerald-500/30 backdrop-blur-md rounded-xl p-4 sm:p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col md:flex-row gap-3 sm:gap-4">
         
-        <Link href="/play" className="group w-full justify-center cursor-pointer flex items-center p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20">
-          <div className="flex items-center gap-2">
-            <Users className="w-8 h-8 text-emerald-500 group-hover:animate-pulse group-hover:scale-110 transition-transform" />
-            <span className="uppercase font-bold text-lg">Play with Human</span>
+
+        <Link 
+          href="/play" 
+          className="group w-full justify-center cursor-pointer flex items-center p-3 sm:p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20"
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500 group-hover:animate-pulse group-hover:scale-110 transition-transform shrink-0" />
+            <span className="uppercase font-bold text-base sm:text-lg">Play with Human</span>
           </div>
         </Link>
 
-        <Link href="/vsai" className="group w-full justify-center cursor-pointer flex items-center p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20">
-          <div className="flex items-center gap-2">
-            <Bot className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
-            <span className="uppercase font-bold text-lg">Challenge AI</span>
+
+        <Link 
+          href="/vsai" 
+          className="group w-full justify-center cursor-pointer flex items-center p-3 sm:p-2 rounded-lg bg-slate-900/40 border border-emerald-500/20 hover:border-emerald-400 text-stone-200 hover:text-emerald-400 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-950/20"
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Bot className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="uppercase font-bold text-base sm:text-lg">Challenge AI</span>
           </div>
         </Link>
 
-        <Link href="/ai-spectator" className="group w-full justify-center cursor-pointer flex items-center p-2 rounded-lg bg-slate-900/40 border border-red-500/20 hover:border-red-500 text-stone-200 hover:text-red-500 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:bg-red-950/10">
-          <div className="flex items-center gap-2">
-            <Swords className="w-8 h-8 text-red-500 group-hover:scale-110 transition-transform" />
-            <span className="uppercase text-lg font-bold">AI Spectator Arena</span>
+
+        <Link 
+          href="/ai-spectator" 
+          className="group w-full justify-center cursor-pointer flex items-center p-3 sm:p-2 rounded-lg bg-slate-900/40 border border-red-500/20 hover:border-red-500 text-stone-200 hover:text-red-500 font-mono tracking-wider text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:bg-red-950/10"
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Swords className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="uppercase text-base sm:text-lg font-bold">AI Spectator Arena</span>
           </div>
         </Link>
 
